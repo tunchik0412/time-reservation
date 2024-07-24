@@ -1,22 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { User } from "../common/types/user";
-import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from "./dto/create-user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { User } from "./entities/user.entity";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UserService {
-  users = []
 
-  createUser(userDTO: Partial<User>) {
-    const hashedPassword = this.hashPassword(userDTO.password)
-    const UserDTO: User = {
-      name: userDTO.name,
-      email: userDTO.email,
-      password: hashedPassword,
-      id: uuidv4()
-    }
-    this.users.push(UserDTO)
-    return UserDTO
+  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {
+  }
+
+  async createUser(userDTO: CreateUserDto) {
+    const hashedPassword = await this.hashPassword(userDTO.password)
+    const user: User = new User();
+    user.name = userDTO.name;
+    user.email = userDTO.email;
+    user.password = hashedPassword;
+    return this.userRepository.save(user);
   }
 
   hashPassword(password: string) {
@@ -29,6 +31,23 @@ export class UserService {
   }
 
   getUsers() {
-    return this.users
+    return this.userRepository.find()
+  }
+
+  findUserById(id: User['id']) {
+    return this.userRepository.findOneBy({ id })
+  }
+
+  updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user: User = new User();
+    user.name = updateUserDto.name;
+    user.email = updateUserDto.email;
+    user.password = updateUserDto.password;
+    user.id = id;
+    return this.userRepository.save(user);
+  }
+
+  removeUser(id: number): Promise<{affected?: number}> {
+    return this.userRepository.delete(id)
   }
 }
