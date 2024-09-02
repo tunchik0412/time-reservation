@@ -5,6 +5,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./user/entities/user.entity";
+import { TokensEntity } from "./tokens/entities/tokens.entity";
+import { TokensModule } from "./tokens/tokens.module";
 
 @Module({
   imports: [
@@ -14,13 +16,14 @@ import { User } from "./user/entities/user.entity";
       port: 5432,
       password: 'test1234',
       username: 'postgres',
-      entities: [User], // here we have added user enitity in entities array
+      entities: [User, TokensEntity], // here we have added user enitity in entities array
       database: 'tickets',
       synchronize: true,
       logging: true,
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    TokensModule
   ],
   controllers: [AppController],
   providers: [AppService],

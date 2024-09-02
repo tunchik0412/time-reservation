@@ -1,26 +1,16 @@
 import {
-  IsAlphanumeric,
-  IsEmail,
-  IsEnum,
-  IsInt, isNotEmpty,
   IsNotEmpty,
-  IsString,
+  IsNumber,
   Matches,
-  MinLength
 } from "class-validator";
 
 const passwordRegEx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@$!%*?&])[A-Za-zd@$!%*?&]{8,20}$/;
 
-export class UpdateUserDto {
-  @IsString()
-  @MinLength(2, { message: 'Name must have atleast 2 characters.' })
+export class DeleteUserDto {
   @IsNotEmpty()
-  name: string;
-
-  @IsNotEmpty()
-  @IsEmail(null, { message: 'Please provide valid Email.' })
-  email: string;
+  @IsNumber()
+  id: number;
 
   @IsNotEmpty()
   @Matches(passwordRegEx, {
