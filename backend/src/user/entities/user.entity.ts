@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Record } from "../../records/entities/record.entity";
 
 @Entity()
 export class User {
@@ -16,4 +17,7 @@ export class User {
 
   @Column({ type: 'varchar' })
   password: string;
+
+  @ManyToMany(type => Record, record => record.users)
+  records: Record[];
 }
