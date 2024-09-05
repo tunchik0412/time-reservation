@@ -14,19 +14,21 @@ export class RecordsService {
   ) {
   }
 
-  async create(createRecordDto: CreateRecordDto) {
+  async create(createRecordDto: CreateRecordDto & { creator: number }) {
     const record = new Record();
     record.creator = createRecordDto.creator;
     record.from = createRecordDto.from;
     record.to = createRecordDto.to;
     record.title = createRecordDto.title;
-    record.description = createRecordDto.description;
-    record.users = [];
-    const user = await this.userRepository.findOneBy({
-      id: createRecordDto.creator
+    record.description = createRecordDto?.description || '';
+    this.recordRepository.create(createRecordDto);
+    const user = await this.userRepository.findOne({
+      where: {
+        id: createRecordDto.creator
+      }
     });
-    record.users.push(user);
-    return this.recordRepository.save(createRecordDto);
+    record.participants = [user];
+    return this.recordRepository.save(record);
   }
 
   findAll() {
@@ -37,11 +39,33 @@ export class RecordsService {
     return `This action returns a #${id} record`;
   }
 
+  async findUserRecords(userId: number) {
+    return this.recordRepository.find({
+      where: {
+        creator: userId
+      },
+      relations: {
+        participants: true
+      },
+    });
+  }
+
   update(id: number, updateRecordDto: UpdateRecordDto) {
     return this.recordRepository.update(id, updateRecordDto);
   }
 
-  remove(id: number) {
+  async remove(id: number, userId: number) {
+    const record = await this.recordRepository.findOne({
+      where: {
+        id: id
+      },
+      relations: {
+        participants: true
+      },
+    });
+    if (record.creator !== userId) {
+      throw new Error('You are not allowed to delete this record');
+    }
     return this.recordRepository.delete(id);
   }
 
@@ -50,7 +74,7 @@ export class RecordsService {
       where: {
         from: from,
         to: to
-      }
+      },
     });
   }
 

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 
 @Entity()
@@ -19,8 +19,11 @@ export class Record {
   to: Date;
 
   @Column()
-  description: string;
+  description: string | null;
 
-  @ManyToMany(type => User, user => user.records)
-  users: User[];
+  @ManyToMany(() => User, user => user.records, {
+    cascade: true
+  })
+  @JoinTable({ name: 'user_records', joinColumn: { name: 'record_id' }, inverseJoinColumn: { name: 'user_id' } })
+  participants: User[];
 }

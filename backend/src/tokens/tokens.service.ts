@@ -35,14 +35,14 @@ export class TokensService {
       if (!tokenEntity) {
         throw UnauthorizedException;
       }
-      const res = await this.jwtService.verifyAsync(
+      return await this.jwtService.verifyAsync(
         token,
         {
           secret: jwtConstants.secret
         }
-      );
-      return res
+      )
     } catch (e) {
+      await this.tokensRepository.delete({ access_token: token });
       throw UnauthorizedException;
     }
   }
