@@ -1,19 +1,19 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { TokensEntity } from "./entities/tokens.entity";
-import { Repository } from "typeorm";
-import { CreateTokenDto } from "./dto/create-token.dto";
-import { DeleteTokenDto } from "./dto/delete-token.dto";
-import { jwtConstants } from "../auth/constants";
-import { JwtService } from "@nestjs/jwt";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TokensEntity } from './entities/tokens.entity';
+import { Repository } from 'typeorm';
+import { CreateTokenDto } from './dto/create-token.dto';
+import { DeleteTokenDto } from './dto/delete-token.dto';
+import { jwtConstants } from '../auth/constants';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class TokensService {
   constructor(
-    @InjectRepository(TokensEntity) private readonly tokensRepository: Repository<TokensEntity>,
+    @InjectRepository(TokensEntity)
+    private readonly tokensRepository: Repository<TokensEntity>,
     private jwtService: JwtService,
-  ) {
-  }
+  ) {}
 
   async createToken(tokenDTO: CreateTokenDto) {
     const newToken: TokensEntity = new TokensEntity();
@@ -25,22 +25,21 @@ export class TokensService {
   async removeToken(tokenDTO: DeleteTokenDto) {
     return this.tokensRepository.delete({
       user_id: tokenDTO.user_id,
-      access_token: tokenDTO.access_token
+      access_token: tokenDTO.access_token,
     });
   }
 
   async checkIsValidToken(token: string) {
     try {
-      const tokenEntity = await this.tokensRepository.findOneBy({ access_token: token });
+      const tokenEntity = await this.tokensRepository.findOneBy({
+        access_token: token,
+      });
       if (!tokenEntity) {
         throw UnauthorizedException;
       }
-      return await this.jwtService.verifyAsync(
-        token,
-        {
-          secret: jwtConstants.secret
-        }
-      )
+      return await this.jwtService.verifyAsync(token, {
+        secret: jwtConstants.secret,
+      });
     } catch (e) {
       await this.tokensRepository.delete({ access_token: token });
       throw UnauthorizedException;

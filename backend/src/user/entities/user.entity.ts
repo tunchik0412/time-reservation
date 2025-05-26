@@ -1,6 +1,6 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Record } from "../../records/entities/record.entity";
-import { Exclude } from "class-transformer";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Record } from '../../records/entities/record.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -19,6 +19,6 @@ export class User {
   @Column({ type: 'varchar', select: false })
   password: string;
 
-  @ManyToMany(() => Record, record => record.participants)
+  @ManyToMany(() => Record, (record) => record.participants)
   records: Record[];
 }

@@ -1,19 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
-import { User } from "../user/user.decorator";
-import { UserJWTPayload } from "../common/types/tokens";
+import { User } from '../user/user.decorator';
+import { UserJWTPayload } from '../common/types/tokens';
 
 @Controller('records')
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
   @Post()
-  create(@Body() createRecordDto: CreateRecordDto, @User() user: UserJWTPayload) {
+  create(
+    @Body() createRecordDto: CreateRecordDto,
+    @User() user: UserJWTPayload,
+  ) {
     return this.recordsService.create({
       ...createRecordDto,
-      creator: user.userId
+      creator: user.userId,
     });
   }
 

@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException, HttpStatus } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import { TokensService } from "../tokens/tokens.service";
-import { SignInDto } from "./dto/sign-in-dto";
-import { SignUpDto } from "./dto/sign-up-dto";
+import { TokensService } from '../tokens/tokens.service';
+import { SignInDto } from './dto/sign-in-dto';
+import { SignUpDto } from './dto/sign-up-dto';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private tokensService: TokensService
+    private tokensService: TokensService,
   ) {}
 
   async signUp(user: SignUpDto) {
@@ -25,7 +25,10 @@ export class AuthService {
         error: 'No user found with this email',
       });
     }
-    const isPasswordValid = this.userService.validatePassword(signInDto.password, user.password);
+    const isPasswordValid = this.userService.validatePassword(
+      signInDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException({
         status: HttpStatus.UNAUTHORIZED,
@@ -36,10 +39,10 @@ export class AuthService {
     const token = await this.jwtService.signAsync(payload);
     await this.tokensService.createToken({
       access_token: token,
-      user_id: user.id
+      user_id: user.id,
     });
     return {
-      access_token: token
+      access_token: token,
     };
   }
 
@@ -48,7 +51,7 @@ export class AuthService {
     try {
       await this.tokensService.removeToken({
         access_token,
-        user_id: userId
+        user_id: userId,
       });
     } catch {
       throw new UnauthorizedException({

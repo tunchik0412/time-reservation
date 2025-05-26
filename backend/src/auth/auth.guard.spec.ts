@@ -1,5 +1,5 @@
 import { AuthGuard } from './auth.guard';
-import { AuthController } from "./auth.controller";
+import { AuthController } from './auth.controller';
 
 describe('AuthGuard', () => {
   let controller: AuthGuard;

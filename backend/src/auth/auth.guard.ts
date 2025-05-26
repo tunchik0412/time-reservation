@@ -1,16 +1,21 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { jwtConstants } from "./constants";
-import { Request } from "express";
-import { Reflector } from "@nestjs/core";
-import { IS_PUBLIC_KEY } from "../common/enums";
-import { TokensService } from "../tokens/tokens.service";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { jwtConstants } from './constants';
+import { Request } from 'express';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../common/enums';
+import { TokensService } from '../tokens/tokens.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private tokenService: TokensService,
-    private reflector: Reflector
+    private reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,7 +37,7 @@ export class AuthGuard implements CanActivate {
       // so that we can access it in our route handlers
       request['user'] = await this.tokenService.checkIsValidToken(token);
     } catch {
-      console.log("Invalid token");
+      console.log('Invalid token');
       throw new UnauthorizedException();
     }
     return true;

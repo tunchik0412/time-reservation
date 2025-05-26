@@ -2,12 +2,13 @@ import {
   IsAlphanumeric,
   IsEmail,
   IsEnum,
-  IsInt, isNotEmpty,
+  IsInt,
+  isNotEmpty,
   IsNotEmpty,
   IsString,
   Matches,
-  MinLength
-} from "class-validator";
+  MinLength,
+} from 'class-validator';
 
 const passwordRegEx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@$!%*?&])[A-Za-zd@$!%*?&]{8,20}$/;

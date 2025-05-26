@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
-import { InjectRepository } from "@nestjs/typeorm";
-import { Record } from "./entities/record.entity";
-import { Repository } from "typeorm";
-import { User } from "../user/entities/user.entity";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Record } from './entities/record.entity';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class RecordsService {
   constructor(
     @InjectRepository(Record) private recordRepository: Repository<Record>,
     @InjectRepository(User) private userRepository: Repository<User>,
-  ) {
-  }
+  ) {}
 
   async create(createRecordDto: CreateRecordDto & { creator: number }) {
     const record = new Record();
@@ -24,8 +23,8 @@ export class RecordsService {
     this.recordRepository.create(createRecordDto);
     const user = await this.userRepository.findOne({
       where: {
-        id: createRecordDto.creator
-      }
+        id: createRecordDto.creator,
+      },
     });
     record.participants = [user];
     return this.recordRepository.save(record);
@@ -42,10 +41,10 @@ export class RecordsService {
   async findUserRecords(userId: number) {
     return this.recordRepository.find({
       where: {
-        creator: userId
+        creator: userId,
       },
       relations: {
-        participants: true
+        participants: true,
       },
     });
   }
@@ -57,10 +56,10 @@ export class RecordsService {
   async remove(id: number, userId: number) {
     const record = await this.recordRepository.findOne({
       where: {
-        id: id
+        id: id,
       },
       relations: {
-        participants: true
+        participants: true,
       },
     });
     if (record.creator !== userId) {
@@ -73,12 +72,10 @@ export class RecordsService {
     return this.recordRepository.find({
       where: {
         from: from,
-        to: to
+        to: to,
       },
     });
   }
 
-  async insertNewRecordToExistingRecord() {
-
-  }
+  async insertNewRecordToExistingRecord() {}
 }
