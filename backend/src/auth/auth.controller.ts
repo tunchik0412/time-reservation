@@ -1,17 +1,23 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in-dto';
 import { SignUpDto } from './dto/sign-up-dto';
+import { GoogleAuthDto } from './dto/google-auth-dto';
+import { AppleAuthDto } from './dto/apple-auth.dto';
 import { Public } from '../common/enums';
+import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 
 @Controller()
 export class AuthController {
@@ -41,5 +47,42 @@ export class AuthController {
   async signOut(@Headers('authorization') auth: string) {
     const access_token = auth.split(' ')[1];
     return this.authService.signOut(access_token);
+  }
+
+  // Google OAuth endpoints
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth(@Req() req: any) {
+    // Guard redirects to Google
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+    const result = await this.authService.googleLogin(req.user);
+    
+    // You can customize this redirect URL based on your frontend
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    const redirectUrl = `${frontendUrl}/auth/google/success?token=${result.access_token}`;
+    
+    res.redirect(redirectUrl);
+  }
+
+  // Alternative endpoint for mobile/direct Google token validation
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('google/token')
+  async googleTokenAuth(@Body() googleAuthDto: GoogleAuthDto) {
+    return this.authService.googleLogin(googleAuthDto);
+  }
+
+  // Apple Sign-In endpoint for mobile
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('apple/token')
+  async appleTokenAuth(@Body() appleAuthDto: AppleAuthDto) {
+    return this.authService.appleLogin(appleAuthDto);
   }
 }

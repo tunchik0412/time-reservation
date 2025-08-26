@@ -16,8 +16,17 @@ export class User {
   @Column({ type: 'varchar', length: 40 })
   email: string;
 
-  @Column({ type: 'varchar', select: false })
+  @Column({ type: 'varchar', select: false, nullable: true })
   password: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  googleId: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  appleId: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  picture: string;
 
   @ManyToMany(() => Record, (record) => record.participants)
   records: Record[];

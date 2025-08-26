@@ -17,19 +17,32 @@ export class UserService {
   ) {}
 
   async createUser(userDTO: CreateUserDto) {
-    const isExist = await this.checkIsUserExist(userDTO.email);
-    if (isExist) {
+    try {
+      const isExist = await this.checkIsUserExist(userDTO.email);
+      if (isExist) {
+        throw {
+          code: HttpStatus.CONFLICT,
+          message: 'User with this email already exists',
+        };
+      }
+      const hashedPassword = await this.hashPassword(userDTO.password);
+      if (!hashedPassword) {
+        throw {
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error hashing password',
+        };
+      }
+      const user: User = new User();
+      user.name = userDTO.name;
+      user.email = userDTO.email;
+      user.password = hashedPassword;
+      return this.userRepository.save(user);
+    } catch (e) {
       throw {
-        code: HttpStatus.CONFLICT,
-        message: 'User with this email already exists',
+        code: e.code || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message || 'Internal server error',
       };
     }
-    const hashedPassword = await this.hashPassword(userDTO.password);
-    const user: User = new User();
-    user.name = userDTO.name;
-    user.email = userDTO.email;
-    user.password = hashedPassword;
-    return this.userRepository.save(user);
   }
 
   async checkIsUserExist(email: string) {
@@ -42,7 +55,6 @@ export class UserService {
   }
 
   validatePassword(password: string, hash: string) {
-    console.log(password, hash);
     return bcrypt.compareSync(password, hash);
   }
 
@@ -55,7 +67,11 @@ export class UserService {
   }
 
   findUserByEmail(email: User['email']) {
-    return this.userRepository.findOneBy({ email });
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password') // ✅ explicitly select hidden field
+      .where('user.email = :email', { email })
+      .getOne();
   }
 
   updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -80,5 +96,80 @@ export class UserService {
     }
     await this.tokensRepository.delete({ user_id: user.id });
     return this.userRepository.delete(user.id);
+  }
+
+  async createGoogleUser(userData: {
+    name: string;
+    email: string;
+    password?: string;
+    googleId: string;
+    picture?: string;
+  }) {
+    try {
+      const user: User = new User();
+      user.name = userData.name;
+      user.email = userData.email;
+      user.password = userData.password || null;
+      user.googleId = userData.googleId;
+      user.picture = userData.picture;
+      
+      return this.userRepository.save(user);
+    } catch (e) {
+      throw {
+        code: e.code || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message || 'Error creating Google user',
+      };
+    }
+  }
+
+  async updateUserGoogleId(userId: number, googleId: string) {
+    try {
+      return this.userRepository.update(userId, { googleId });
+    } catch (e) {
+      throw {
+        code: e.code || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message || 'Error updating user Google ID',
+      };
+    }
+  }
+
+  async findUserByGoogleId(googleId: string) {
+    return this.userRepository.findOneBy({ googleId });
+  }
+
+  async createAppleUser(userData: {
+    name: string;
+    email?: string;
+    appleId: string;
+  }) {
+    try {
+      const user: User = new User();
+      user.name = userData.name;
+      user.email = userData.email || `${userData.appleId}@apple.signin`;
+      user.password = null; // Apple users don't have passwords
+      user.appleId = userData.appleId;
+      
+      return this.userRepository.save(user);
+    } catch (e) {
+      throw {
+        code: e.code || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message || 'Error creating Apple user',
+      };
+    }
+  }
+
+  async updateUserAppleId(userId: number, appleId: string) {
+    try {
+      return this.userRepository.update(userId, { appleId });
+    } catch (e) {
+      throw {
+        code: e.code || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message || 'Error updating user Apple ID',
+      };
+    }
+  }
+
+  async findUserByAppleId(appleId: string) {
+    return this.userRepository.findOneBy({ appleId });
   }
 }

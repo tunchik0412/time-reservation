@@ -18,6 +18,12 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=mydb
       - PORT=3000
+      - GOOGLE_CLIENT_ID=your_google_client_id_here
+      - GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/google/callback
+      - FRONTEND_URL=http://localhost:3001
+      # Add these for mobile testing
+      - GOOGLE_CALLBACK_URL_MOBILE=http://192.168.0.199:3000/google/callback
     depends_on:
       - postgres
 
